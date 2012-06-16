@@ -126,6 +126,7 @@ private:
 	// Maps meshbuffers to TileSpecs
 	std::map<u32, TileSpec> m_animation_tiles;
 	std::map<u32, int> m_animation_frames; // last animation frame
+	std::map<u32, int> m_animation_frame_offsets;
 	
 	// Animation info: day/night transitions
 	// Last daynight_ratio value passed to animate()

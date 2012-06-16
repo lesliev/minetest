@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "gamedef.h"
 #include "mesh.h"
 #include "content_mapblock.h"
+#include "noise.h"
 
 /*
 	MeshMakeData
@@ -993,8 +994,12 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data):
 		{
 			ITextureSource *tsrc = data->m_gamedef->tsrc();
 			// Add to MapBlockMesh in order to animate these tiles
-			m_animation_tiles.insert(std::make_pair(i, p.tile));
-			m_animation_frames.insert(std::make_pair(i, 0));
+			m_animation_tiles[i] = p.tile;
+			m_animation_frames[i] = 0;
+			// Get starting position from noise
+			m_animation_frame_offsets[i] = 100000 * (2.0 + noise3d(
+					data->m_blockpos.X, data->m_blockpos.Y,
+					data->m_blockpos.Z, 0));
 			// Replace tile texture with the first animation frame
 			std::ostringstream os(std::ios::binary);
 			os<<tsrc->getTextureName(p.tile.texture.id);
@@ -1122,8 +1127,9 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack, u32 daynight_rat
 		{
 			const TileSpec &tile = i->second;
 			// Figure out current frame
-			int frame = (int)(time * 1000 / tile.animation_frame_length_ms)
-					% tile.animation_frame_count;
+			int frameoffset = m_animation_frame_offsets[i->first];
+			int frame = (int)(time * 1000 / tile.animation_frame_length_ms
+					+ frameoffset) % tile.animation_frame_count;
 			// If frame doesn't change, skip
 			if(frame == m_animation_frames[i->first])
 				continue;
