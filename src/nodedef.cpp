@@ -608,6 +608,8 @@ public:
 				if(tiledef[j].animation.type == TAT_VERTICAL_FRAMES)
 					f->tiles[j].material_flags |= MATERIAL_FLAG_ANIMATION_VERTICAL_FRAMES;
 				// Animation parameters
+				if(f->tiles[j].material_flags &
+						MATERIAL_FLAG_ANIMATION_VERTICAL_FRAMES)
 				{
 					// Get raw texture size to determine frame count by
 					// aspect ratio
@@ -621,6 +623,15 @@ public:
 							tiledef[j].animation.length / frame_count;
 					f->tiles[j].animation_frame_count = frame_count;
 					f->tiles[j].animation_frame_length_ms = frame_length_ms;
+
+					// If there are no frames for an animation, switch
+					// animation off (so that having specified an animation
+					// for something but not using it in the texture pack
+					// gives no overhead)
+					if(frame_count == 1){
+						f->tiles[j].material_flags &=
+								~MATERIAL_FLAG_ANIMATION_VERTICAL_FRAMES;
+					}
 				}
 			}
 			// Special tiles (fill in f->special_tiles[])
