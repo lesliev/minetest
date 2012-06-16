@@ -95,6 +95,41 @@ struct NodeBox
 struct MapNode;
 class NodeMetadata;
 
+/*
+	Stand-alone definition of a TileSpec (basically a server-side TileSpec)
+*/
+enum TileAnimationType{
+	TAT_NONE=0,
+	TAT_VERTICAL_FRAMES=1,
+};
+struct TileDef
+{
+	std::string name;
+	struct{
+		enum TileAnimationType type;
+		int aspect_w; // width for aspect ratio
+		int aspect_h; // height for aspect ratio
+		float length; // seconds
+	} animation;
+
+	TileDef()
+	{
+		name = "";
+		animation.type = TAT_NONE;
+		animation.aspect_w = 1;
+		animation.aspect_h = 1;
+		animation.length = 1.0;
+	}
+
+	void serialize(std::ostream &os) const;
+	void deSerialize(std::istream &is);
+};
+
+/*
+	Stand-alone definition for a graphical material
+	
+	This is used mainly for flowing liquids, i think. -celeron55
+*/
 struct MaterialSpec
 {
 	std::string tname;
@@ -159,7 +194,7 @@ struct ContentFeatures
 	// Visual definition
 	enum NodeDrawType drawtype;
 	float visual_scale; // Misc. scale parameter
-	std::string tname_tiles[6];
+	TileDef tiledef[6];
 	MaterialSpec mspec_special[CF_SPECIAL_COUNT]; // Use setter methods
 	u8 alpha;
 

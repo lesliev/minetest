@@ -426,6 +426,13 @@ struct EnumString es_CraftMethod[] =
 	{0, NULL},
 };
 
+struct EnumString es_TileAnimationType[] =
+{
+	{TAT_NONE, "none"},
+	{TAT_VERTICAL_FRAMES, "vertical_frames"},
+	{0, NULL},
+};
+
 /*
 	C struct <-> Lua table converter functions
 */
@@ -1026,7 +1033,8 @@ static ContentFeatures read_content_features(lua_State *L, int index)
 	f.drawtype = (NodeDrawType)getenumfield(L, index, "drawtype", es_DrawType,
 			NDT_NORMAL);
 	getfloatfield(L, index, "visual_scale", f.visual_scale);
-
+	
+	// tile_images = {}
 	lua_getfield(L, index, "tile_images");
 	if(lua_istable(L, -1)){
 		int table = lua_gettop(L);
@@ -1034,10 +1042,30 @@ static ContentFeatures read_content_features(lua_State *L, int index)
 		int i = 0;
 		while(lua_next(L, table) != 0){
 			// key at index -2 and value at index -1
-			if(lua_isstring(L, -1))
-				f.tname_tiles[i] = lua_tostring(L, -1);
-			else
-				f.tname_tiles[i] = "";
+			if(lua_isstring(L, -1)){
+				// "default_lava.png"
+				f.tiledef[i].name = lua_tostring(L, -1);
+			}
+			else if(lua_istable(L, -1))
+			{
+				// {name="default_lava.png", animation={}}
+				f.tiledef[i].name = getstringfield_default(L, -1, "name", "");
+				lua_getfield(L, -1, "animation");
+				if(lua_istable(L, -1)){
+					// animation = {type="vertical_frames",
+					//     aspect_w=16, aspect_h=16, length=2.0}
+					f.tiledef[i].animation.type = (TileAnimationType)
+							getenumfield(L, -1, "type", es_TileAnimationType,
+							TAT_NONE);
+					f.tiledef[i].animation.aspect_w =
+							getintfield_default(L, -1, "aspect_w", 16);
+					f.tiledef[i].animation.aspect_h =
+							getintfield_default(L, -1, "aspect_h", 16);
+					f.tiledef[i].animation.length =
+							getfloatfield_default(L, -1, "length", 1.0);
+				}
+				lua_pop(L, 1);
+			}
 			// removes value, keeps key for next iteration
 			lua_pop(L, 1);
 			i++;
@@ -1048,9 +1076,9 @@ static ContentFeatures read_content_features(lua_State *L, int index)
 		}
 		// Copy last value to all remaining textures
 		if(i >= 1){
-			std::string lastname = f.tname_tiles[i-1];
+			TileDef lasttile = f.tiledef[i-1];
 			while(i < 6){
-				f.tname_tiles[i] = lastname;
+				f.tiledef[i] = lasttile;
 				i++;
 			}
 		}

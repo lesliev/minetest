@@ -54,9 +54,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	PROTOCOL_VERSION 10:
 		TOCLIENT_PRIVILEGES
 		Version raised to force 'fly' and 'fast' privileges into effect.
+		Node metadata change (came in later; somewhat incompatible)
+	PROTOCOL_VERSION 11:
+		TileDef in ContentFeatures
 */
 
-#define PROTOCOL_VERSION 10
+#define PROTOCOL_VERSION 11
 
 #define PROTOCOL_ID 0x4f457403
 

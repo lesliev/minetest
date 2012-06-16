@@ -1050,7 +1050,10 @@ minetest.register_node("default:lava_source", {
 	description = "Lava",
 	inventory_image = minetest.inventorycube("default_lava.png"),
 	drawtype = "liquid",
-	tile_images = {"default_lava.png"},
+	--tile_images = {"default_lava.png"},
+	tile_images = {
+		{name="default_lava_source_animated.png", animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=3.0}}
+	},
 	paramtype = "light",
 	light_source = LIGHT_MAX - 1,
 	walkable = false,
