@@ -1083,6 +1083,8 @@ static ContentFeatures read_content_features(lua_State *L, int index)
 	// If nil, try the deprecated name "tile_images" instead
 	if(lua_isnil(L, -1)){
 		lua_pop(L, 1);
+		warn_if_field_exists(L, index, "tile_images",
+				"Deprecated; new name is \"tiles\".");
 		lua_getfield(L, index, "tile_images");
 	}
 	if(lua_istable(L, -1)){
@@ -1116,6 +1118,8 @@ static ContentFeatures read_content_features(lua_State *L, int index)
 	// If nil, try the deprecated name "special_materials" instead
 	if(lua_isnil(L, -1)){
 		lua_pop(L, 1);
+		warn_if_field_exists(L, index, "special_materials",
+				"Deprecated; new name is \"special_tiles\".");
 		lua_getfield(L, index, "special_materials");
 	}
 	if(lua_istable(L, -1)){
