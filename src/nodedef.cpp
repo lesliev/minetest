@@ -240,7 +240,7 @@ void ContentFeatures::serialize(std::ostream &os)
 void ContentFeatures::deSerialize(std::istream &is)
 {
 	int version = readU8(is);
-	if(version != 4)
+	if(version != 4 && version != 3)
 		throw SerializationError("unsupported ContentFeatures version");
 	name = deSerializeString(is);
 	groups.clear();
@@ -254,8 +254,12 @@ void ContentFeatures::deSerialize(std::istream &is)
 	visual_scale = readF1000(is);
 	if(readU8(is) != 6)
 		throw SerializationError("unsupported tile count");
-	for(u32 i=0; i<6; i++)
-		tiledef[i].deSerialize(is);
+	for(u32 i=0; i<6; i++){
+		if(version == 4)
+			tiledef[i].deSerialize(is);
+		else if(version == 3)
+			tiledef[i].name = deSerializeString(is);
+	}
 	if(readU8(is) != CF_SPECIAL_COUNT)
 		throw SerializationError("unsupported CF_SPECIAL_COUNT");
 	for(u32 i=0; i<CF_SPECIAL_COUNT; i++){
