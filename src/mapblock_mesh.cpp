@@ -1120,33 +1120,31 @@ bool MapBlockMesh::animate(bool faraway, float time, int crack, u32 daynight_rat
 	}
 	
 	// Texture animation
-	if(!faraway){
-		for(std::map<u32, TileSpec>::iterator
-				i = m_animation_tiles.begin();
-				i != m_animation_tiles.end(); i++)
-		{
-			const TileSpec &tile = i->second;
-			// Figure out current frame
-			int frameoffset = m_animation_frame_offsets[i->first];
-			int frame = (int)(time * 1000 / tile.animation_frame_length_ms
-					+ frameoffset) % tile.animation_frame_count;
-			// If frame doesn't change, skip
-			if(frame == m_animation_frames[i->first])
-				continue;
+	for(std::map<u32, TileSpec>::iterator
+			i = m_animation_tiles.begin();
+			i != m_animation_tiles.end(); i++)
+	{
+		const TileSpec &tile = i->second;
+		// Figure out current frame
+		int frameoffset = m_animation_frame_offsets[i->first];
+		int frame = (int)(time * 1000 / tile.animation_frame_length_ms
+				+ frameoffset) % tile.animation_frame_count;
+		// If frame doesn't change, skip
+		if(frame == m_animation_frames[i->first])
+			continue;
 
-			m_animation_frames[i->first] = frame;
+		m_animation_frames[i->first] = frame;
 
-			scene::IMeshBuffer *buf = m_mesh->getMeshBuffer(i->first);
-			ITextureSource *tsrc = m_gamedef->getTextureSource();
+		scene::IMeshBuffer *buf = m_mesh->getMeshBuffer(i->first);
+		ITextureSource *tsrc = m_gamedef->getTextureSource();
 
-			// Create new texture name from original
-			std::ostringstream os(std::ios::binary);
-			os<<tsrc->getTextureName(tile.texture.id);
-			os<<"^[verticalframe:"<<(int)tile.animation_frame_count<<":"<<frame;
-			// Set the texture
-			AtlasPointer ap = tsrc->getTexture(os.str());
-			buf->getMaterial().setTexture(0, ap.atlas);
-		}
+		// Create new texture name from original
+		std::ostringstream os(std::ios::binary);
+		os<<tsrc->getTextureName(tile.texture.id);
+		os<<"^[verticalframe:"<<(int)tile.animation_frame_count<<":"<<frame;
+		// Set the texture
+		AtlasPointer ap = tsrc->getTexture(os.str());
+		buf->getMaterial().setTexture(0, ap.atlas);
 	}
 
 	// Day-night transition
