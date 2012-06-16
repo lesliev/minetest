@@ -1040,8 +1040,16 @@ minetest.register_node("default:lava_flowing", {
 	damage_per_second = 4*2,
 	post_effect_color = {a=192, r=255, g=64, b=0},
 	special_materials = {
-		{image="default_lava.png", backface_culling=false},
-		{image="default_lava.png", backface_culling=true},
+		{
+			image="default_lava_source_animated.png",
+			backface_culling=false,
+			animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=3.0}
+		},
+		{
+			image="default_lava_source_animated.png",
+			backface_culling=true,
+			animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=3.0}
+		},
 	},
 	groups = {lava=3, liquid=2, hot=3},
 })

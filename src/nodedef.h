@@ -105,6 +105,7 @@ enum TileAnimationType{
 struct TileDef
 {
 	std::string name;
+	bool backface_culling; // Takes effect only in special cases
 	struct{
 		enum TileAnimationType type;
 		int aspect_w; // width for aspect ratio
@@ -115,30 +116,12 @@ struct TileDef
 	TileDef()
 	{
 		name = "";
+		backface_culling = true;
 		animation.type = TAT_NONE;
 		animation.aspect_w = 1;
 		animation.aspect_h = 1;
 		animation.length = 1.0;
 	}
-
-	void serialize(std::ostream &os) const;
-	void deSerialize(std::istream &is);
-};
-
-/*
-	Stand-alone definition for a graphical material
-	
-	This is used mainly for flowing liquids, i think. -celeron55
-*/
-struct MaterialSpec
-{
-	std::string tname;
-	bool backface_culling;
-	
-	MaterialSpec(const std::string &tname_="", bool backface_culling_=true):
-		tname(tname_),
-		backface_culling(backface_culling_)
-	{}
 
 	void serialize(std::ostream &os) const;
 	void deSerialize(std::istream &is);
@@ -195,7 +178,7 @@ struct ContentFeatures
 	enum NodeDrawType drawtype;
 	float visual_scale; // Misc. scale parameter
 	TileDef tiledef[6];
-	MaterialSpec mspec_special[CF_SPECIAL_COUNT]; // Use setter methods
+	TileDef tiledef_special[CF_SPECIAL_COUNT]; // eg. flowing liquid
 	u8 alpha;
 
 	// Post effect color, drawn when the camera is inside the node.

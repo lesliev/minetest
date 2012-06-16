@@ -89,22 +89,6 @@ void TileDef::deSerialize(std::istream &is)
 }
 
 /*
-	MaterialSpec
-*/
-
-void MaterialSpec::serialize(std::ostream &os) const
-{
-	os<<serializeString(tname);
-	writeU8(os, backface_culling);
-}
-
-void MaterialSpec::deSerialize(std::istream &is)
-{
-	tname = deSerializeString(is);
-	backface_culling = readU8(is);
-}
-
-/*
 	SimpleSoundSpec serialization
 */
 
@@ -161,7 +145,7 @@ void ContentFeatures::reset()
 	for(u32 i=0; i<6; i++)
 		tiledef[i] = TileDef();
 	for(u16 j=0; j<CF_SPECIAL_COUNT; j++)
-		mspec_special[j] = MaterialSpec();
+		tiledef_special[j] = TileDef();
 	alpha = 255;
 	post_effect_color = video::SColor(0, 0, 0, 0);
 	param_type = CPT_NONE;
@@ -205,7 +189,7 @@ void ContentFeatures::serialize(std::ostream &os)
 		tiledef[i].serialize(os);
 	writeU8(os, CF_SPECIAL_COUNT);
 	for(u32 i=0; i<CF_SPECIAL_COUNT; i++){
-		mspec_special[i].serialize(os);
+		tiledef_special[i].serialize(os);
 	}
 	writeU8(os, alpha);
 	writeU8(os, post_effect_color.getAlpha());
@@ -257,13 +241,18 @@ void ContentFeatures::deSerialize(std::istream &is)
 	for(u32 i=0; i<6; i++){
 		if(version == 4)
 			tiledef[i].deSerialize(is);
-		else if(version == 3)
+		else if(version == 3) // Allow connecting to older servers
 			tiledef[i].name = deSerializeString(is);
 	}
 	if(readU8(is) != CF_SPECIAL_COUNT)
 		throw SerializationError("unsupported CF_SPECIAL_COUNT");
 	for(u32 i=0; i<CF_SPECIAL_COUNT; i++){
-		mspec_special[i].deSerialize(is);
+		if(version == 4){
+			tiledef_special[i].deSerialize(is);
+		} else if(version == 3){ // Allow connecting to older servers
+			tiledef_special[i].name = deSerializeString(is);
+			tiledef_special[i].backface_culling = readU8(is);
+		}
 	}
 	alpha = readU8(is);
 	post_effect_color.setAlpha(readU8(is));
@@ -636,15 +625,47 @@ public:
 			}
 			// Special tiles (fill in f->special_tiles[])
 			for(u16 j=0; j<CF_SPECIAL_COUNT; j++){
-				f->special_tiles[j].texture = tsrc->getTexture(f->mspec_special[j].tname);
+				// Texture
+				f->special_tiles[j].texture =
+						tsrc->getTexture(f->tiledef_special[j].name);
+				// Alpha
 				f->special_tiles[j].alpha = f->alpha;
 				if(f->alpha == 255)
 					f->special_tiles[j].material_type = MATERIAL_ALPHA_SIMPLE;
 				else
 					f->special_tiles[j].material_type = MATERIAL_ALPHA_VERTEX;
+				// Material flags
 				f->special_tiles[j].material_flags = 0;
-				if(f->mspec_special[j].backface_culling)
+				if(f->tiledef_special[j].backface_culling)
 					f->special_tiles[j].material_flags |= MATERIAL_FLAG_BACKFACE_CULLING;
+				if(f->tiledef_special[j].animation.type == TAT_VERTICAL_FRAMES)
+					f->special_tiles[j].material_flags |= MATERIAL_FLAG_ANIMATION_VERTICAL_FRAMES;
+				// Animation parameters
+				if(f->special_tiles[j].material_flags &
+						MATERIAL_FLAG_ANIMATION_VERTICAL_FRAMES)
+				{
+					// Get raw texture size to determine frame count by
+					// aspect ratio
+					video::ITexture *t = tsrc->getTextureRaw(f->tiledef_special[j].name);
+					v2u32 size = t->getOriginalSize();
+					int frame_height = (float)size.X /
+							(float)f->tiledef_special[j].animation.aspect_w *
+							(float)f->tiledef_special[j].animation.aspect_h;
+					int frame_count = size.Y / frame_height;
+					int frame_length_ms = 1000.0 *
+							f->tiledef_special[j].animation.length / frame_count;
+					f->special_tiles[j].animation_frame_count = frame_count;
+					f->special_tiles[j].animation_frame_length_ms = frame_length_ms;
+
+					// If there are no frames for an animation, switch
+					// animation off (so that having specified an animation
+					// for something but not using it in the texture pack
+					// gives no overhead)
+					if(frame_count == 1){
+						f->special_tiles[j].material_flags &=
+								~MATERIAL_FLAG_ANIMATION_VERTICAL_FRAMES;
+					}
+				}
 			}
 		}
 #endif
