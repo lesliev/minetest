@@ -263,6 +263,7 @@ set(minetest_SRCS
 	tile.cpp
 	game.cpp
 	main.cpp
+	mob.cpp
 )
 
 # Server sources

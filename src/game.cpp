@@ -35,6 +35,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "guiChatConsole.h"
 #include "config.h"
 #include "clouds.h"
+#include "mob.h"
 #include "camera.h"
 #include "farmesh.h"
 #include "mapblock.h"
@@ -1069,6 +1070,14 @@ void the_game(
 	{
 		clouds = new Clouds(smgr->getRootSceneNode(), smgr, -1, time(0));
 	}
+
+  /*
+   * Mob
+   *
+  */
+
+  Mob *mob = NULL;
+  mob = new Mob(smgr->getRootSceneNode(), smgr, -1, time(0));
 
 	/*
 		Skybox thingy
