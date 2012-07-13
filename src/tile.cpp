@@ -39,6 +39,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 MutexedMap<std::string, std::string> g_texturename_to_path_cache;
 
 /*
+	A cache from model name to model path
+*/
+MutexedMap<std::string, std::string> g_modelname_to_path_cache;
+
+/*
 	Replaces the filename extension.
 	eg:
 		std::string image = "a/image.png"
@@ -77,17 +82,12 @@ static bool replace_ext(std::string &path, const char *ext)
 
 	If failed, return "".
 */
-static std::string getImagePath(std::string path)
+static std::string getExtPath(std::string path, std::string default_ext, const char** extensions)
 {
-	// A NULL-ended list of possible image extensions
-	const char *extensions[] = {
-		"png", "jpg", "bmp", "tga",
-		"pcx", "ppm", "psd", "wal", "rgb",
-		NULL
-	};
 	// If there is no extension, add one
 	if(removeStringEnd(path, extensions) == "")
-		path = path + ".png";
+		path = path + "." + default_ext;
+
 	// Check paths until something is found to exist
 	const char **ext = extensions;
 	do{
@@ -101,6 +101,30 @@ static std::string getImagePath(std::string path)
 	
 	return "";
 }
+
+static std::string getImageExtPath(std::string path)
+{
+	// A NULL-ended list of possible image extensions
+	const char *extensions[] = {
+		"png", "jpg", "bmp", "tga",
+		"pcx", "ppm", "psd", "wal", "rgb",
+		NULL
+	};
+	
+	return getExtPath(path, "png", extensions);
+}
+
+static std::string getModelExtPath(std::string path)
+{
+	// A NULL-ended list of possible image extensions
+	const char *extensions[] = {
+		"md3", "md2",
+		NULL
+	};
+	
+	return getExtPath(path, "md2", extensions);
+}
+
 
 /*
 	Gets the path to a texture by first checking if the texture exists
@@ -130,7 +154,7 @@ std::string getTexturePath(const std::string &filename)
 	{
 		std::string testpath = texture_path + DIR_DELIM + filename;
 		// Check all filename extensions. Returns "" if not found.
-		fullpath = getImagePath(testpath);
+		fullpath = getImageExtPath(testpath);
 	}
 	
 	/*
@@ -142,7 +166,7 @@ std::string getTexturePath(const std::string &filename)
 				+ "textures" + DIR_DELIM + "all";
 		std::string testpath = texture_path + DIR_DELIM + filename;
 		// Check all filename extensions. Returns "" if not found.
-		fullpath = getImagePath(testpath);
+		fullpath = getImageExtPath(testpath);
 	}
 
 	/*
@@ -154,7 +178,7 @@ std::string getTexturePath(const std::string &filename)
 				+ DIR_DELIM + "base" + DIR_DELIM + "pack";
 		std::string testpath = base_path + DIR_DELIM + filename;
 		// Check all filename extensions. Returns "" if not found.
-		fullpath = getImagePath(testpath);
+		fullpath = getImageExtPath(testpath);
 	}
 	
 	// Add to cache (also an empty result is cached)
@@ -163,6 +187,72 @@ std::string getTexturePath(const std::string &filename)
 	// Finally return it
 	return fullpath;
 }
+
+/*
+	Gets the path to a model by first checking if the model exists
+	in model_path and if not, using the data path.
+
+	Checks all supported extensions by replacing the original extension.
+
+	If not found, returns "".
+
+	Utilizes a thread-safe cache.
+*/
+
+std::string getModelPath(const std::string &filename)
+{
+	std::string fullpath = "";
+	/*
+		Check from cache
+	*/
+	bool incache = g_modelname_to_path_cache.get(filename, &fullpath);
+	if(incache)
+		return fullpath;
+	
+	/*
+		Check from model_path
+	*/
+	std::string model_path = g_settings->get("model_path");
+	if(model_path != "")
+	{
+		std::string testpath = model_path + DIR_DELIM + filename;
+		// Check all filename extensions. Returns "" if not found.
+		fullpath = getModelExtPath(testpath);
+	}
+	
+	/*
+		Check from $user/models/all
+	*/
+	if(fullpath == "")
+	{
+		std::string path = porting::path_user + DIR_DELIM
+				+ "models" + DIR_DELIM + "all";
+		std::string testpath = path + DIR_DELIM + filename;
+		// Check all filename extensions. Returns "" if not found.
+		fullpath = getModelExtPath(testpath);
+	}
+
+	/*
+		Check from default data directory
+	*/
+	if(fullpath == "")
+	{
+		std::string base_path = porting::path_share + DIR_DELIM + "models"
+				+ DIR_DELIM + "base" + DIR_DELIM + "pack";
+		std::string testpath = base_path + DIR_DELIM + filename;
+		// Check all filename extensions. Returns "" if not found.
+		fullpath = getModelExtPath(testpath);
+	}
+	
+	// Add to cache (also an empty result is cached)
+	g_modelname_to_path_cache.set(filename, fullpath);
+	
+	// Finally return it
+	return fullpath;
+}
+
+
+
 
 /*
 	An internal variant of AtlasPointer with more data.

@@ -21,9 +21,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "noise.h"
 #include "constants.h"
 #include "debug.h"
-#include "main.h" // For g_profiler and g_settings
+#include "main.h"       // For g_profiler and g_settings
 #include "profiler.h"
 #include "settings.h"
+#include "tile.h"       // For getTexturePath and getModelPath
 
 Mob::Mob(
 		scene::ISceneNode* parent,
@@ -49,29 +50,16 @@ Mob::Mob(
 	m_box = core::aabbox3d<f32>(-BS*1000000,m_y-BS,-BS*1000000,
 			BS*1000000,m_y+BS,BS*1000000);
 
-  // draw arb mesh
-  //
 
-    m_mesh = mgr->getMesh("/home/leslie/dev/git/minetest/models/Pteranodon/Pteranodon.MD2");
+  // load a mesh
+  m_mesh = mgr->getMesh(getModelPath("pteranodon").c_str());
 
-    m_node = mgr->addMeshSceneNode(m_mesh, NULL);
-    //m_node = mgr->addAnimatedMeshSceneNode(m_mesh);
+  m_node = mgr->addMeshSceneNode(m_mesh, NULL);
 
-    m_node->setPosition(player_position);
+  // put it at the player's feet
+  m_node->setPosition(player_position);
 
-
-    //m_node->setMD2Animation(scene::EMAT_STAND);
-
-
-    m_mesh->drop();
-
-/*
-  m_node->setScale(v3f((m_prop.visual_size.X*BS)/2,
-    (m_prop.visual_size.Y*BS)/2,
-    (m_prop.visual_size.X*BS)/2));
-  u8 li = m_last_light;
-  setMeshColor(m_node->getMesh(), video::SColor(255,li,li,li));
-*/
+  m_mesh->drop();
 }
 
 Mob::~Mob()
@@ -105,7 +93,7 @@ void Mob::render()
 	if (m_node)
 	{
 		m_node->setMaterialFlag(video::EMF_LIGHTING, false);
-    m_node->setMaterialTexture(0, driver->getTexture("/home/leslie/dev/git/minetest/models/Pteranodon/maps/mapeado.png"));
+    m_node->setMaterialTexture(0, driver->getTexture(getTexturePath("pteranodon_map.png").c_str()));
 	}
 }
 

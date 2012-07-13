@@ -88,6 +88,7 @@ void set_default_settings(Settings *settings)
 	settings->setDefault("smooth_lighting", "true");
 	settings->setDefault("enable_texture_atlas", "true");
 	settings->setDefault("texture_path", "");
+	settings->setDefault("model_path", "");
 	settings->setDefault("video_driver", "opengl");
 	settings->setDefault("free_move", "false");
 	settings->setDefault("continuous_forward", "false");

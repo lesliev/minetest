@@ -47,6 +47,18 @@ class IGameDef;
 std::string getTexturePath(const std::string &filename);
 
 /*
+	Gets the path to a model by first checking if the model exists
+	in model_path and if not, using the data path.
+
+	Checks all supported extensions by replacing the original extension.
+
+	If not found, returns "".
+
+	Utilizes a thread-safe cache.
+*/
+std::string getModelPath(const std::string &filename);
+
+/*
 	Specifies a texture in an atlas.
 
 	This is used to specify single textures also.

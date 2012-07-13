@@ -253,6 +253,7 @@ distribution.
 Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0)                                 
 http://creativecommons.org/licenses/by-sa/3.0/
 
+
 License of Minetest-c55 source code
 -----------------------------------
 
@@ -371,4 +372,9 @@ DejaVu Sans Mono:
 
   Copyright (c) 2006 by Tavmjong Bah. All Rights Reserved.
 
+
+Additional media attributions
+-----------------------------
+
+Antonio Arjona Melches: Pteranodon model and texture
 
