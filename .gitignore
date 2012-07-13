@@ -7,17 +7,18 @@ tags
 
 ## Non-static Minetest directories
 /bin/
-/games/*
-!/games/minimal/
+/build/
+#/games/*
+#!/games/minimal/
 /cache/
-/textures/
-/sounds/
-/mods/*
-!/mods/minetest/
-/mods/minetest/*
-!/mods/minetest/mods_here.txt
-/worlds/
-/world/
+#/textures/
+#/sounds/
+#/mods/*
+#!/mods/minetest/
+#/mods/minetest/*
+#!/mods/minetest/mods_here.txt
+#/worlds/
+#/world/
 
 ## Configuration/log files
 minetest.conf
