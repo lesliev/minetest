@@ -1076,8 +1076,11 @@ void the_game(
    *
   */
 
+  LocalPlayer* player = client.getEnv().getLocalPlayer();
+  v3f player_position = player->getPosition();
+
   Mob *mob = NULL;
-  mob = new Mob(smgr->getRootSceneNode(), smgr, -1, time(0));
+  mob = new Mob(smgr->getRootSceneNode(), smgr, -1, time(0), player_position);
 
 	/*
 		Skybox thingy

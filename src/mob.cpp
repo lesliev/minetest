@@ -29,7 +29,8 @@ Mob::Mob(
 		scene::ISceneNode* parent,
 		scene::ISceneManager* mgr,
 		s32 id,
-		u32 seed
+		u32 seed,
+    v3f player_position
 ):
 	scene::ISceneNode(parent, mgr, id),
 	m_seed(seed),
@@ -51,9 +52,16 @@ Mob::Mob(
   // draw arb mesh
   //
 
-    m_mesh = mgr->getMesh("/home/leslie/dev/git/minetest/minetest-les/models/pteranodon.md2");
+    m_mesh = mgr->getMesh("/home/leslie/dev/git/minetest/models/Pteranodon/Pteranodon.MD2");
+
     m_node = mgr->addMeshSceneNode(m_mesh, NULL);
-  //m_node = mgr->addAnimatedMeshSceneNode(m_mesh);
+    //m_node = mgr->addAnimatedMeshSceneNode(m_mesh);
+
+    m_node->setPosition(player_position);
+
+
+    //m_node->setMD2Animation(scene::EMAT_STAND);
+
 
     m_mesh->drop();
 
@@ -97,7 +105,7 @@ void Mob::render()
 	if (m_node)
 	{
 		m_node->setMaterialFlag(video::EMF_LIGHTING, false);
-    //m_node->setMaterialTexture( 0, driver->getTexture("mapeado.png") );
+    m_node->setMaterialTexture(0, driver->getTexture("/home/leslie/dev/git/minetest/models/Pteranodon/maps/mapeado.png"));
 	}
 }
 
