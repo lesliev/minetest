@@ -376,5 +376,5 @@ DejaVu Sans Mono:
 Additional media attributions
 -----------------------------
 
-Antonio Arjona Melches: Pteranodon model and texture
+Antonio Arjona Melches (antonio.arjona.melches@gmail.com): Pteranodon model and texture
 
