@@ -482,6 +482,10 @@ minetest.register_craftitem("experimental:tester_tool_1", {
 	inventory_image = "experimental_tester_tool_1.png",
     on_use = function(itemstack, user, pointed_thing)
 		--print(dump(pointed_thing))
+    mobles.deleting = not mobles.deleting
+    print("deleting: " .. tostring(mobles.deleting))
+
+--[[
 		if pointed_thing.type == "node" then
 			if minetest.env:get_node(pointed_thing.under).name == "experimental:tester_node_1" then
 				local p = pointed_thing.under
@@ -493,6 +497,7 @@ minetest.register_craftitem("experimental:tester_tool_1", {
 				minetest.env:place_node(p, {name="experimental:tester_node_1"})
 			end
 		end
+]]--
 	end,
 })
 

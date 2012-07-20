@@ -1,6 +1,27 @@
 
 mobles = {
+  deleting = false
 }
+
+minetest.register_node("mobles:deleter", {
+  description = 'Snake deleter',
+  tile_images = { "default_stone.png" },
+  is_ground_content = true,
+  groups = {fleshy=3},
+  sounds = default.node_sound_stone_defaults(),
+  drop = 'craft "mobles:deleter" 1',
+  on_place = function(item, place, pointed)
+    mobles.deleting = not mobles.deleting
+    print("Deleting:" .. tostring(mobles.deleting))
+
+    pos = minetest.get_pointed_thing_position(pointed, true)
+		if pos ~= nil then
+      minetest.env:add_node(pos, {name='mobles:deleter'})
+			item:take_item()
+			return item
+    end
+  end
+})
 
 minetest.register_node("mobles:snake_head", {
   description = 'Snake head',
@@ -20,6 +41,7 @@ minetest.register_node("mobles:snake_head", {
 
       local meta = minetest.env:get_meta(pos)
       meta:set_int("favourite_direction", math.random(0, 3))
+      meta:set_int("length_remaining", 50)
 
 			item:take_item()
 			return item
@@ -52,17 +74,37 @@ minetest.register_craft( {
 	},
 })
 
+minetest.register_craft( {
+	output = 'mobles:deleter 1',
+	recipe = {
+		{ 'default:cobble' },
+		{ 'default:cobble' },
+		{ 'default:cobble' }
+	},
+})
 
 -- delete snake segments
---minetest.register_abm({
---		nodenames = { "mobles:snake_segment" },
---		interval = 0.3,
---		chance = 1,
---		action = function(pos, node, active_object_count, active_object_count_wider)
+minetest.register_abm({
+		nodenames = { "mobles:snake_segment" },
+		interval = 1,
+		chance = 1,
+		action = function(pos, node, active_object_count, active_object_count_wider)
+      if mobles.deleting then
+        minetest.env:remove_node(pos)
+      end
+    end
+})
 
---      minetest.env:remove_node(pos)
---    end
---})
+minetest.register_abm({
+		nodenames = { "mobles:snake_head" },
+		interval = 1,
+		chance = 1,
+		action = function(pos, node, active_object_count, active_object_count_wider)
+      if mobles.deleting then
+        minetest.env:remove_node(pos)
+      end
+    end
+})
 
 minetest.register_abm({
 		nodenames = { "mobles:snake_head" },
@@ -70,17 +112,20 @@ minetest.register_abm({
 		chance = 1,
 		action = function(pos, node, active_object_count, active_object_count_wider)
 
-      print "Growing!"
-      print(dump(pos))
-
       local meta = minetest.env:get_meta(pos)
       local fav_dir = meta:get_int("favourite_direction")
+      local length_remaining = meta:get_int("length_remaining")
 
-      new_head_pos = mobles.grow_snake_from_pos(pos, fav_dir)
+      if length_remaining > 0 then
+        print("Growing, length: " .. tostring(length_remaining))
+        length_remaining = length_remaining - 1
 
-      meta = minetest.env:get_meta(new_head_pos)
-      meta:set_int("favourite_direction", fav_dir)
+        new_head_pos = mobles.grow_snake_from_pos(pos, fav_dir)
 
+        meta = minetest.env:get_meta(new_head_pos)
+        meta:set_int("favourite_direction", fav_dir)
+        meta:set_int("length_remaining", length_remaining)
+      end
     end
 })
 
@@ -90,11 +135,8 @@ mobles.grow_snake_from_pos = function(pos, fav_dir)
   b = 0
   c = 0
 
-  if math.random(0, 5) == 0 then
-
+  if math.random(0, 4) == 0 then
     -- unlikely, but pick a totally random direction
-    print "RANDO!"
-
     r = math.random(0, 5)
 
     if r == 0 then
@@ -110,14 +152,8 @@ mobles.grow_snake_from_pos = function(pos, fav_dir)
     elseif r == 5 then
       c = 1
     end
-
   else
-
     -- much more likely: go in the favourite direction
-
-    print "FAV!"
-    print(fav_dir)
-
     if fav_dir == 0 then
       a = -1
     elseif fav_dir == 1 then
@@ -127,7 +163,6 @@ mobles.grow_snake_from_pos = function(pos, fav_dir)
     elseif fav_dir == 3 then
       c = 1
     end
-
   end
 
   local adjacent = {x = pos.x + a, y = pos.y + b, z = pos.z + c}
