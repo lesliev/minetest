@@ -40,8 +40,14 @@ minetest.register_node("mobles:snake_head", {
       minetest.env:add_node(pos, {name='mobles:snake_head'})
 
       local meta = minetest.env:get_meta(pos)
-      meta:set_int("favourite_direction", math.random(0, 3))
-      meta:set_int("length_remaining", 50)
+
+      local mt = meta:to_table()
+      mt.fields.favourite_direction = math.random(0, 3)
+      mt.fields.length_remaining = 50
+      meta:from_table(mt)
+
+      --local meta2 = minetest.env:get_meta(pos)
+      --print("OK: " .. tostring(mt.length_remaining))
 
 			item:take_item()
 			return item
@@ -113,18 +119,19 @@ minetest.register_abm({
 		action = function(pos, node, active_object_count, active_object_count_wider)
 
       local meta = minetest.env:get_meta(pos)
-      local fav_dir = meta:get_int("favourite_direction")
-      local length_remaining = meta:get_int("length_remaining")
+      local mt = meta:to_table()
 
-      if length_remaining > 0 then
-        print("Growing, length: " .. tostring(length_remaining))
-        length_remaining = length_remaining - 1
+      len = tonumber(mt.fields.length_remaining)
 
-        new_head_pos = mobles.grow_snake_from_pos(pos, fav_dir)
+      if len > 0 then
+        print("Growing, length: " .. tostring(len))
+        len = len - 1
+        mt.fields.length_remaining = len
+
+        new_head_pos = mobles.grow_snake_from_pos(pos, tonumber(mt.fields.favourite_direction))
 
         meta = minetest.env:get_meta(new_head_pos)
-        meta:set_int("favourite_direction", fav_dir)
-        meta:set_int("length_remaining", length_remaining)
+        meta:from_table(mt)
       end
     end
 })
