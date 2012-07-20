@@ -1,56 +1,41 @@
 
 mobles = {
-  head_pos = nil,
-  tick_max = 20,
-  tick = 60
 }
 
-minetest.register_node("mobles:snake_segment", {
-  description = 'Snake segment',
-  tiles = {
-    "forniture_wood.png",
-    "forniture_wood.png",
-    "forniture_wood_s1.png",
-    "forniture_wood_s1.png",
-    "forniture_wood_s2.png",
-    "forniture_wood_s2.png",
-  },
-  drawtype = "nodebox",
-  sunlight_propagates = true,
-  paramtype = 'light',
-  paramtype2 = "facedir",
-  node_box = {
-    type = "fixed",
-    fixed = {
-      { 0.48003008, -0.16000000, 0.50000000, 0.45503008, 0.16000000, -0.50000000 }, -- cube2_sep28
-      { 0.45253008, -0.24100000, 0.50000000, 0.40253008, 0.24100000, -0.50000000 }, -- cube2_sep27
-      { 0.40253008, -0.31500000, 0.50000000, 0.35253008, 0.31500000, -0.50000000 }, -- cube2_sep26
-      { 0.35253008, -0.38300000, 0.50000000, 0.30253008, 0.38300000, -0.50000000 }, -- cube2_sep25
-      { 0.30029927, -0.40400000, 0.50000000, 0.25029927, 0.40400000, -0.50000000 }, -- cube2_sep24
-      { 0.24753008, -0.45200000, 0.50000000, 0.14753008, 0.45200000, -0.50000000 }, -- cube2_copy16
-      { -0.48250000, -0.16000000, -0.50000000, -0.45750000, 0.16000000, 0.50000000 }, -- cube2_copy14
-      { -0.45500000, -0.24100000, -0.50000000, -0.40500000, 0.24100000, 0.50000000 }, -- cube2_copy13
-      { -0.40500000, -0.31500000, -0.50000000, -0.35500000, 0.31500000, 0.50000000 }, -- cube2_copy12
-      { -0.35500000, -0.38300000, -0.50000000, -0.30500000, 0.38300000, 0.50000000 }, -- cube2_copy11
-      { -0.30276919, -0.40400000, -0.50000000, -0.25276919, 0.40400000, 0.50000000 }, -- cube2_copy10
-      { -0.25000000, -0.45200000, -0.50000000, -0.15000000, 0.45200000, 0.50000000 }, -- cube2_copy9
-    },
-  },
-  groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
+minetest.register_node("mobles:snake_head", {
+  description = 'Snake head',
+  tile_images = { "default_stone.png^mobles_snake_head.png" },
+  is_ground_content = true,
+  groups = {fleshy=3},
+  sounds = default.node_sound_stone_defaults(),
+  drop = 'craft "mobles:snake_head" 1',
   on_place = function(item, place, pointed)
-    print "AWESOME SNAKE PLACEMENT!"
+    print "AWESOME SNAKE HEAD PLACEMENT!"
 
     pos = minetest.get_pointed_thing_position(pointed, true)
     mobles.head_pos = pos
 
 		if pos ~= nil then
-      minetest.env:add_node(pos, {name='mobles:snake_segment'})
+      minetest.env:add_node(pos, {name='mobles:snake_head'})
+
+      local meta = minetest.env:get_meta(pos)
+      meta:set_int("favourite_direction", math.random(0, 3))
+
 			item:take_item()
 			return item
-		end
-
+    end
   end
 })
+
+minetest.register_node("mobles:snake_segment", {
+  description = 'Snake segment',
+  tile_images = { "default_stone.png^mobles_snake_segment.png" },
+  is_ground_content = true,
+  groups = {fleshy=3},
+  sounds = default.node_sound_stone_defaults(),
+  drop = 'craft "mobles:snake_segment" 1',
+})
+
 
 minetest.register_craft( {
 	output = 'mobles:snake_segment 50',
@@ -58,6 +43,15 @@ minetest.register_craft( {
 		{ 'default:cobble' }
 	},
 })
+
+minetest.register_craft( {
+	output = 'mobles:snake_head 50',
+	recipe = {
+		{ 'default:cobble' },
+		{ 'default:cobble' }
+	},
+})
+
 
 -- delete snake segments
 --minetest.register_abm({
@@ -70,50 +64,78 @@ minetest.register_craft( {
 --    end
 --})
 
-function on_step(dtime)
-  if mobles.tick < 0 then
-    mobles.tick = mobles.tick_max
-    print "Growing from head!"
-    if mobles.head_pos then
-      print "HEAD:"
-      print(dump(mobles.head_pos))
+minetest.register_abm({
+		nodenames = { "mobles:snake_head" },
+		interval = 5,
+		chance = 1,
+		action = function(pos, node, active_object_count, active_object_count_wider)
 
-      --mobles.head_pos = mobles.grow_snake_from_pos(mobles.head_pos)
+      print "Growing!"
+      print(dump(pos))
+
+      local meta = minetest.env:get_meta(pos)
+      local fav_dir = meta:get_int("favourite_direction")
+
+      new_head_pos = mobles.grow_snake_from_pos(pos, fav_dir)
+
+      meta = minetest.env:get_meta(new_head_pos)
+      meta:set_int("favourite_direction", fav_dir)
+
     end
-  else
-    mobles.tick = mobles.tick - 1
-  end
-end
-minetest.register_globalstep(on_step)
+})
 
 
-mobles.grow_snake_from_pos = function(pos)
-
+mobles.grow_snake_from_pos = function(pos, fav_dir)
   a = 0
   b = 0
   c = 0
 
-  r = math.random(0, 5)
+  if math.random(0, 5) == 0 then
 
-  if r == 0 then
-    a = -1
-  elseif r == 1 then
-    a = 1
-  elseif r == 2 then
-    b = -1
-  elseif r == 3 then
-    b = 1
-  elseif r == 4 then
-    c = -1
-  elseif r == 5 then
-    c = 1
+    -- unlikely, but pick a totally random direction
+    print "RANDO!"
+
+    r = math.random(0, 5)
+
+    if r == 0 then
+      a = -1
+    elseif r == 1 then
+      a = 1
+    elseif r == 2 then
+      b = -1
+    elseif r == 3 then
+      b = 1
+    elseif r == 4 then
+      c = -1
+    elseif r == 5 then
+      c = 1
+    end
+
+  else
+
+    -- much more likely: go in the favourite direction
+
+    print "FAV!"
+    print(fav_dir)
+
+    if fav_dir == 0 then
+      a = -1
+    elseif fav_dir == 1 then
+      a = 1
+    elseif fav_dir == 2 then
+      c = -1
+    elseif fav_dir == 3 then
+      c = 1
+    end
+
   end
 
   local adjacent = {x = pos.x + a, y = pos.y + b, z = pos.z + c}
   local node_adjacent = minetest.env:get_node(adjacent)
 
   if node_adjacent.name == "air" then
-    minetest.env:add_node(adjacent,{type=node, name="mobles:snake_segment"})
+    minetest.env:add_node(adjacent,{type=node, name="mobles:snake_head"})
+    minetest.env:add_node(pos,{type=node, name="mobles:snake_segment"})
   end
 
   return adjacent
