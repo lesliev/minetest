@@ -68,8 +68,7 @@ public:
 	void update(v2f camera_p, video::SColorf color);
 
 private:
-  scene::IAnimatedMesh* m_mesh;
-  scene::IMeshSceneNode *m_node;
+  scene::IAnimatedMeshSceneNode* m_node;
 
 	video::SMaterial m_material;
 	core::aabbox3d<f32> m_box;

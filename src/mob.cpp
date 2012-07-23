@@ -38,7 +38,6 @@ Mob::Mob(
 	m_camera_pos(0,0),
 	m_time(0)
 {
-  dstream << "C";
 	m_material.setFlag(video::EMF_LIGHTING, false);
 	m_material.setFlag(video::EMF_BACK_FACE_CULLING, true);
 	m_material.setFlag(video::EMF_BILINEAR_FILTER, false);
@@ -51,16 +50,10 @@ Mob::Mob(
 	m_box = core::aabbox3d<f32>(-BS*1000000,m_y-BS,-BS*1000000,
 			BS*1000000,m_y+BS,BS*1000000);
 
-
-  // load a mesh
-  m_mesh = mgr->getMesh(getModelPath("pteranodon").c_str());
-
-  m_node = mgr->addMeshSceneNode(m_mesh, NULL);
+  m_node = mgr->addAnimatedMeshSceneNode(mgr->getMesh(getModelPath("pteranodon").c_str()), NULL);
 
   // put it at the player's feet
   m_node->setPosition(player_position);
-
-//
 
 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
 
@@ -71,9 +64,6 @@ Mob::Mob(
 
 	if (m_node)
 	{
-    //v3f speed(1, 0, 0);
-    //m_node->setPosition(m_node->getPosition() + speed);
-
 		m_node->setMaterialFlag(video::EMF_LIGHTING, false);
     m_node->setMaterialTexture(0, driver->getTexture(getTexturePath("pteranodon_map.png").c_str()));
 
@@ -88,8 +78,6 @@ Mob::Mob(
 
     m_node->setRotation(v3f(0,-90,0));
 	}
-
-  m_mesh->drop();
 }
 
 Mob::~Mob()
@@ -117,7 +105,6 @@ void Mob::render()
 void Mob::step(float dtime)
 {
 	m_time += dtime;
-  dstream << "s";
 }
 
 void Mob::update(v2f camera_p, video::SColorf color)
