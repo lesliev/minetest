@@ -44,6 +44,7 @@ minetest.register_node("mobles:snake_head", {
       local mt = meta:to_table()
       mt.fields.favourite_direction = math.random(0, 3)
       mt.fields.length_remaining = 50
+      mt.fields.tail_pos = "return {" .. pos.x .. "," .. pos.y .. "," .. pos.z .. "}"
       meta:from_table(mt)
 
       --local meta2 = minetest.env:get_meta(pos)
@@ -130,6 +131,10 @@ minetest.register_abm({
 
         new_head_pos = mobles.grow_snake_from_pos(pos, tonumber(mt.fields.favourite_direction))
 
+-- grow tail?
+--        tail_pos = loadstring(mt.fields.tail_pos)()
+--        minetest.env:add_node(tail_pos,{type=node, name="default:cobble"})
+--
         meta = minetest.env:get_meta(new_head_pos)
         meta:from_table(mt)
       end
