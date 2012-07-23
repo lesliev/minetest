@@ -50,7 +50,8 @@ Mob::Mob(
 	m_box = core::aabbox3d<f32>(-BS*1000000,m_y-BS,-BS*1000000,
 			BS*1000000,m_y+BS,BS*1000000);
 
-  m_node = mgr->addAnimatedMeshSceneNode(mgr->getMesh(getModelPath("pteranodon").c_str()), NULL);
+  //m_node = mgr->addAnimatedMeshSceneNode(mgr->getMesh(getModelPath("pteranodon").c_str()), NULL);
+  m_node = mgr->addMeshSceneNode(mgr->getMesh(getModelPath("pteranodon").c_str()), NULL);
 
   // put it at the player's feet
   m_node->setPosition(player_position);
